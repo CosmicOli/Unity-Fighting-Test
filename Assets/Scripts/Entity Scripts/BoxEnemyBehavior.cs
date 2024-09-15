@@ -9,7 +9,8 @@ using UnityEngine;
 public class BoxEnemyBehavior : GenericGravityEntityBehaviour, EntityAIInterface, ContactDamageInterface
 {
     // Variables required by ContactDamageInterface
-    public GameObject player { get; set; }
+    public GameObject[] players { get; set; }
+    public GameObject targetedPlayer { get; set; }
     public PlayerBehaviour playerBehaviour { get; set; }
     public bool stillInContact { get; set; }
     public Collider2D currentCollision { get; set; }
@@ -51,23 +52,40 @@ public class BoxEnemyBehavior : GenericGravityEntityBehaviour, EntityAIInterface
     protected override void Start()
     {
         base.Start();
-
-        player = GameObject.FindGameObjectWithTag("Player");
-        playerBehaviour = player.GetComponent<PlayerBehaviour>();
-        ContactDamage = ContactDamageValue;
     }
 
     protected override void FixedUpdate()
     {
         base.FixedUpdate();
-        
-        ContactDamageBehaviour.FixedUpdate(currentCollision, stillInContact, playerBehaviour, gameObject, player, ContactDamage);
-        EntityAIBehaviour.ProgressAI(currentlyAttacking, ableToAttack, aggroLevel, player, DetermineAggroLevel, MoveUnaggroed, MoveAggroed, Attack);
+
+        players = GameObject.FindGameObjectsWithTag("Player");
+
+        float distanceSquared = float.PositiveInfinity;
+        foreach (GameObject player in players)
+        {
+            Vector2 PlayerPosition = player.transform.position;
+            Vector2 EnemyPosition = transform.position;
+
+            Vector2 DifferenceInPosition = PlayerPosition - EnemyPosition;
+            float newDistanceSquared = DifferenceInPosition.x * DifferenceInPosition.x + DifferenceInPosition.y * DifferenceInPosition.y;
+
+            if (newDistanceSquared < distanceSquared)
+            {
+                distanceSquared = newDistanceSquared;
+                targetedPlayer = player;
+            }
+        }
+
+        playerBehaviour = targetedPlayer.GetComponent<PlayerBehaviour>();
+        ContactDamage = ContactDamageValue;
+
+        ContactDamageBehaviour.FixedUpdate(currentCollision, stillInContact, playerBehaviour, gameObject, targetedPlayer, ContactDamage);
+        EntityAIBehaviour.ProgressAI(currentlyAttacking, ableToAttack, aggroLevel, targetedPlayer, DetermineAggroLevel, MoveUnaggroed, MoveAggroed, Attack);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Tuple<Collider2D, bool> ReferencedInputs = ContactDamageBehaviour.OnTriggerEnter2D(collision, currentCollision, stillInContact, playerBehaviour, gameObject, player, ContactDamage);
+        Tuple<Collider2D, bool> ReferencedInputs = ContactDamageBehaviour.OnTriggerEnter2D(collision, currentCollision, stillInContact, playerBehaviour, gameObject, targetedPlayer, ContactDamage);
         currentCollision = ReferencedInputs.Item1;
         stillInContact = ReferencedInputs.Item2;
     }

@@ -6,7 +6,8 @@ using UnityEngine;
 public interface ContactDamageInterface
 {
     // These "constants" refer to the player and it's behaviour script
-    public GameObject player { get; set; }
+    public GameObject[] players { get; set; }
+    public GameObject targetedPlayer { get; set; }
     public PlayerBehaviour playerBehaviour { get; set; }
 
     // This constant defines how much damage the player takes on contact with this entity

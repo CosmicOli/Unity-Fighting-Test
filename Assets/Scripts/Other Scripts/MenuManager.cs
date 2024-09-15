@@ -23,10 +23,6 @@ public class MenuManager : MonoBehaviour
         {
             if (Menus[i].MenuName == MenuName)
             {
-                if (Menus[i].MenuName == "Create Room")
-                {
-                    Debug.Log("Huh");
-                }
                 Menus[i].Open();
             }
             else if (Menus[i].open)

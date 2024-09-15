@@ -96,14 +96,14 @@ public class CameraBehaviour : MonoBehaviour
     void Start()
     {
         // Defining the references to the player 
-        playerGameObject = GameObject.FindGameObjectWithTag("Player");
+        playerGameObject = transform.parent.Find("Player Controller").gameObject;
         playerBehaviour = playerGameObject.GetComponent<PlayerBehaviour>();
         playerRigidBody = playerGameObject.GetComponent<Rigidbody2D>();
 
         // First assigning whether the player is facing right
         previouslyFacingRight = playerBehaviour.isFacingRight;
 
-        Vector3 cameraPosition = gameObject.transform.position;
+        Vector3 cameraPosition = transform.position;
 
         // Defining the height and width of the camera when orthographic
         //float CameraHeight = Camera.orthographicSize;
@@ -111,7 +111,7 @@ public class CameraBehaviour : MonoBehaviour
 
         // Defining the height and width of the camera when perspective
         // Unity links orthographic size and FOV by them being an equal viewing at z=-10 with an angle 10*size
-        float CameraHeight = Mathf.Tan(Mathf.PI * Camera.fieldOfView / 360) * Mathf.Abs(gameObject.transform.position.z);
+        float CameraHeight = Mathf.Tan(Mathf.PI * Camera.fieldOfView / 360) * Mathf.Abs(transform.position.z);
         float CameraWidth = CameraHeight * Camera.aspect;
 
         previousTopBound = CalculateVerticalCameraBound(1, CameraHeight, cameraPosition);
@@ -127,7 +127,7 @@ public class CameraBehaviour : MonoBehaviour
         if (!currentlyFixed)
         {
             // Defining the key object positions
-            Vector3 cameraPosition = gameObject.transform.position;
+            Vector3 cameraPosition = transform.position;
             Vector3 previousCameraPosition = cameraPosition;
             Vector3 PlayerPosition = playerGameObject.transform.position;
 
@@ -178,7 +178,7 @@ public class CameraBehaviour : MonoBehaviour
                 if (justKnockedBackTimer > JustKnockedBackDelay)
                 {
                     cameraPosition = Vector3.Lerp(startingCameraPositionOnKnockback, new Vector3(TargetCameraX, TargetCameraY, cameraPosition.z), (justKnockedBackTimer - JustKnockedBackDelay) / (JustKnockedBackMaximumAfterDelay));
-
+                    
                     if (justKnockedBackTimer > JustKnockedBackDelay + JustKnockedBackMaximumAfterDelay)
                     {
                         justKnockedBack = false;
@@ -198,7 +198,7 @@ public class CameraBehaviour : MonoBehaviour
 
             // Defining the height and width of the camera when perspective
             // Unity links orthographic size and FOV by them being an equal viewing at z=-10 with an angle 10*size
-            float CameraHeight = Mathf.Tan(Mathf.PI * Camera.fieldOfView / 360) * Mathf.Abs(gameObject.transform.position.z);
+            float CameraHeight = Mathf.Tan(Mathf.PI * Camera.fieldOfView / 360) * Mathf.Abs(transform.position.z);
             float CameraWidth = CameraHeight * Camera.aspect;
 
             // If the horizontal bounds are closer than the horizontal size of the camera, bound the camera
@@ -280,7 +280,7 @@ public class CameraBehaviour : MonoBehaviour
             }
 
             // Reassign the camera position to be the newly calculated position
-            gameObject.transform.position = cameraPosition;
+            transform.position = cameraPosition;
         }
     }
 
@@ -292,7 +292,7 @@ public class CameraBehaviour : MonoBehaviour
             // If the previous bound isn't infinity
             if (previousBound != directionInAxis * Mathf.Infinity)
             {
-                // Only transition when the previous bound is withing frame
+                // Only transition when the previous bound is within frame
                 // This accounts for whether the player is moving away from a wall, as it shouldn't transition then
                 if (directionInAxis * previousBound < directionInAxis * cameraEdge)
                 {
@@ -421,7 +421,7 @@ public class CameraBehaviour : MonoBehaviour
 
         float verticalMaxSpeed = playerBehaviour.TerminalSpeed - 5;
 
-        float verticalCameraPosition = gameObject.transform.position.y;
+        float verticalCameraPosition = transform.position.y;
         float targetVerticalCameraPosition;
 
         float speedFactor = 0;
@@ -521,14 +521,14 @@ public class CameraBehaviour : MonoBehaviour
         }
 
         justKnockedBack = true;
-        startingCameraPositionOnKnockback = gameObject.transform.position;
+        startingCameraPositionOnKnockback = transform.position;
     }
     
     public void FixCamera(Vector3 position)
     {
         currentlyFixed = true;
 
-        gameObject.transform.position = position;
+        transform.position = position;
     }
 
     public void UnfixCamera()

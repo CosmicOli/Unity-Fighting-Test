@@ -100,9 +100,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
 
         playerCollider = gameObject.GetComponent<BoxCollider2D>();
 
-        Debug.Log(gameObject.transform.Find("Player Camera") + "hi");
-
-        camera = gameObject.transform.Find("Player Camera").gameObject;
+        camera = transform.parent.Find("Player Camera").gameObject;
         cameraBehaviour = camera.GetComponent<CameraBehaviour>();
     }
 
