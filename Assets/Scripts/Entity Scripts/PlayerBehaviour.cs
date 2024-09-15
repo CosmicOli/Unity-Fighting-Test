@@ -82,7 +82,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
 
 
     // These "constants" refers to the main camera and it's behaviour
-    private Camera camera;
+    private GameObject camera;
     private CameraBehaviour cameraBehaviour;
 
 
@@ -100,7 +100,9 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
 
         playerCollider = gameObject.GetComponent<BoxCollider2D>();
 
-        camera = GameObject.FindAnyObjectByType<Camera>();
+        Debug.Log(gameObject.transform.Find("Player Camera") + "hi");
+
+        camera = gameObject.transform.Find("Player Camera").gameObject;
         cameraBehaviour = camera.GetComponent<CameraBehaviour>();
     }
 
