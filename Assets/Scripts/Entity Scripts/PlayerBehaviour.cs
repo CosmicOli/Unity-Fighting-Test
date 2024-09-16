@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -92,7 +93,6 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
         return MaximumHorizontalSpeedFromPower;
     }
 
-
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -100,7 +100,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
 
         playerCollider = gameObject.GetComponent<BoxCollider2D>();
 
-        camera = transform.parent.Find("Player Camera").gameObject;
+        camera = transform.Find("Player Camera").gameObject;
         cameraBehaviour = camera.GetComponent<CameraBehaviour>();
     }
 

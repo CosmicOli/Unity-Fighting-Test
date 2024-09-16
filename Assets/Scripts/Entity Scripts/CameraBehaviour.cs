@@ -96,7 +96,7 @@ public class CameraBehaviour : MonoBehaviour
     void Start()
     {
         // Defining the references to the player 
-        playerGameObject = transform.parent.Find("Player Controller").gameObject;
+        playerGameObject = transform.parent.gameObject;
         playerBehaviour = playerGameObject.GetComponent<PlayerBehaviour>();
         playerRigidBody = playerGameObject.GetComponent<Rigidbody2D>();
 
