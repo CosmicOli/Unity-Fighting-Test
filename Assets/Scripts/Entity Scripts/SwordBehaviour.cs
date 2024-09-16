@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,9 +32,13 @@ public class SwordBehaviour : MonoBehaviour
     // This variable stores where the player is currently pointing
     private Vector3 CurrentDirection3D;
 
+    private InputTransmitter inputTransmitter;
+
     // Start is called before the first frame update
     void Start()
     {
+        inputTransmitter = transform.parent.parent.Find("Input Transmitter").GetComponent<InputTransmitter>();
+
         GameObject player = GameObject.FindGameObjectWithTag("Player");
 
         attackBehaviour = player.GetComponent<AttackBehaviour>();
@@ -52,10 +57,17 @@ public class SwordBehaviour : MonoBehaviour
 
     public void Attack(InputAction.CallbackContext context)
     {
+        Attack(context.performed);
+    }
+
+    public void Attack(bool contextPerformed)
+    {
+        inputTransmitter.Attack(contextPerformed);
+
         if (playerBehaviour.currentlyAbleToInput)
         {
             // If currently swinging and there is no instantiated Swing object, create one
-            if (context.performed && swordSwing == null)
+            if (contextPerformed && swordSwing == null)
             {
                 // Gets the current swing direction
                 Vector2 CurrentDirection = attackBehaviour.currentDirection;

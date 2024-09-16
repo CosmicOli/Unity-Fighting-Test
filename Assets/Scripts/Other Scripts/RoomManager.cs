@@ -1,7 +1,9 @@
 using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,7 +39,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         if (scene.buildIndex == 1)
         {
-            PhotonNetwork.Instantiate(Path.Combine("Photon Prefabs", "Player Manager"), Vector3.zero, Quaternion.identity);
+            PhotonNetwork.Instantiate(Path.Combine("Photon Prefabs", "Player Controller"), Vector3.zero, Quaternion.identity);
         }
     }
 

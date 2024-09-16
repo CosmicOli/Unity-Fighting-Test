@@ -2,6 +2,7 @@ using Photon.Pun;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using System.Reflection.Emit;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -45,7 +46,8 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
     // Variables used to allow a jump to be queued slightly before hitting the floor
     private bool jumpPreEntered = false;
     private float jumpPreEnteredTimer = 0;
-    private InputAction.CallbackContext preEnteredContext;
+    private bool preEnteredContextPerformed;
+    private bool preEnteredContextCancelled;
 
     // This constant defines how long before jump pre-entering is cut off
     [HideInInspector]
@@ -86,6 +88,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
     private GameObject camera;
     private CameraBehaviour cameraBehaviour;
 
+    private InputTransmitter inputTransmitter;
 
     // This is a get function for MaximumHorizontalSpeedFromPower
     public float GetMaximumHorizontalSpeedFromPower()
@@ -98,9 +101,12 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
     {
         base.Start();
 
+        inputTransmitter = transform.parent.Find("Input Transmitter").GetComponent<InputTransmitter>();
+
         playerCollider = gameObject.GetComponent<BoxCollider2D>();
 
-        camera = transform.Find("Player Camera").gameObject;
+        camera = transform.parent.Find("Player Camera").gameObject;
+
         cameraBehaviour = camera.GetComponent<CameraBehaviour>();
     }
 
@@ -190,7 +196,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
                 // If the player has pre-entered jump, jump
                 if (jumpPreEntered)
                 {
-                    Jump(preEnteredContext);
+                    Jump(preEnteredContextPerformed, preEnteredContextCancelled);
                 }
             }
         }
@@ -225,27 +231,41 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
 
     public void Move(InputAction.CallbackContext context)
     {
+        Move(context.ReadValue<Vector2>());
+    }
+
+    public void Move(Vector2 contextValue)
+    {
+        inputTransmitter.Move(contextValue);
+
         if (currentlyAbleToInput)
         {
             // When moving, update the input directions
-            inputDirection = context.ReadValue<Vector2>();
+            inputDirection = contextValue;
             horizontalAccelerationDirection = inputDirection.x;
         }
         else
         {
-            retainedInputDirection = context.ReadValue<Vector2>();
+            retainedInputDirection = contextValue;
             retainedHorizontalAccelerationDirection = retainedInputDirection.x;
         }
     }
 
     public void Jump(InputAction.CallbackContext context)
     {
+        Jump(context.performed, context.canceled);
+    }
+
+    public void Jump(bool contextPerfomed, bool contextCanceled)
+    {
+        inputTransmitter.Jump(contextPerfomed, contextCanceled);
+
         if (currentlyAbleToInput)
         {
             // If on the ground then accelerate upwards
             if (isGrounded)
             {
-                if (context.performed)
+                if (contextPerfomed)
                 {
                     entityRigidBody.velocity = new Vector2(entityRigidBody.velocity.x, JumpAccelerationPower);
                     currentlyJumping = true;
@@ -255,11 +275,12 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
             else
             {
                 jumpPreEntered = true;
-                preEnteredContext = context;
+                preEnteredContextPerformed = contextPerfomed;
+                preEnteredContextCancelled = contextCanceled;
             }
 
             // If the jump input is cancelled
-            if (context.canceled)
+            if (contextCanceled)
             {
                 // If the jump is pre-entered, cancel the pre-enter
                 if (jumpPreEntered)
@@ -310,6 +331,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
         }
     }
 
+    // Change later to handle online
     public override void TakeDamage(float damage)
     {
         if (!justHit)
