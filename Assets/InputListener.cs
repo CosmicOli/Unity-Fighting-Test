@@ -9,6 +9,7 @@ public class InputListener : MonoBehaviour
 {
     private PlayerBehaviour playerBehaviour;
     private SwordBehaviour swordBehaviour;
+    private PositionCorrectionBehaviour positionCorrectionBehaviour;
 
     private PhotonView PV;
 
@@ -19,13 +20,15 @@ public class InputListener : MonoBehaviour
         Transform playerTransform = transform.parent.Find("Player Character");
         playerBehaviour = playerTransform.GetComponent<PlayerBehaviour>();
         swordBehaviour = playerTransform.Find("Sword").GetComponent<SwordBehaviour>();
+        positionCorrectionBehaviour = transform.parent.Find("Position Corrector").GetComponent<PositionCorrectionBehaviour>();
     }
 
-    public void Move(Vector2 contextValue)
+    public void Move(Vector2 contextValue, Vector3 correctPosition, Vector2 correctVelocity)
     {
         if (!PV.IsMine)
         {
             playerBehaviour.Move(contextValue);
+            //positionCorrectionBehaviour.UpdateTruePositionAndVelocity(correctPosition, correctVelocity);
         }
     }
 

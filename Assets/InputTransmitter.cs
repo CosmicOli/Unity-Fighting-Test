@@ -19,7 +19,7 @@ public class InputTransmitter : MonoBehaviour
     {
         if (PV.IsMine)
         {
-            PV.RPC("Move", RpcTarget.All, contextValue);
+            PV.RPC("Move", RpcTarget.Others, contextValue);
         }
     }
 
@@ -27,7 +27,7 @@ public class InputTransmitter : MonoBehaviour
     {
         if (PV.IsMine)
         {
-            PV.RPC("Jump", RpcTarget.All, contextPerformed, contextCanceled);
+            PV.RPC("Jump", RpcTarget.Others, contextPerformed, contextCanceled);
         }
     }
 
@@ -35,7 +35,7 @@ public class InputTransmitter : MonoBehaviour
     {
         if (PV.IsMine)
         {
-            PV.RPC("Attack", RpcTarget.All, contextPerformed);
+            PV.RPC("Attack", RpcTarget.Others, contextPerformed);
         }
     }
 }

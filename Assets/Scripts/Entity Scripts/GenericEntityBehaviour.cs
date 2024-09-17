@@ -32,7 +32,7 @@ public class GenericEntityBehaviour : MonoBehaviour
         entityRigidBody.freezeRotation = true;
     }
 
-    protected float calculateGravitylessAxisVelocity(float axisVelocity, float axisDrag, float axisAccelerationPower, float axisAccelerationDirection, float maximumAxisSpeedFromPower)
+    public float calculateGravitylessAxisVelocity(float axisVelocity, float axisDrag, float axisAccelerationPower, float axisAccelerationDirection, float maximumAxisSpeedFromPower)
     {
         float newAxisVelocity = axisVelocity;
 

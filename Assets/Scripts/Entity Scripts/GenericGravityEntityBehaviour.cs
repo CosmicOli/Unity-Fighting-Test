@@ -27,7 +27,7 @@ public class GenericGravityEntityBehaviour : GenericHorizontalEntityBehaviour
         entityRigidBody.velocity = new Vector2(newHorizontalVelocity, newVerticalVelocity);
     }
 
-    private float calculateGravityAxisVelocity(float axisVelocity, float axisTerminalSpeed)
+    public float calculateGravityAxisVelocity(float axisVelocity, float axisTerminalSpeed)
     {
         // Gravity is handled by the Rigid Body 2D assocciated with the gameObject
 
