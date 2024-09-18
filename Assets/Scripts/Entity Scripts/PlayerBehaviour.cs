@@ -89,6 +89,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
     private CameraBehaviour cameraBehaviour;
 
     private InputTransmitter inputTransmitter;
+    private PositionCorrectionBehaviour positionCorrectionBehaviour;
 
     // This is a get function for MaximumHorizontalSpeedFromPower
     public float GetMaximumHorizontalSpeedFromPower()
@@ -102,6 +103,7 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
         base.Start();
 
         inputTransmitter = transform.parent.Find("Input Transmitter").GetComponent<InputTransmitter>();
+        positionCorrectionBehaviour = transform.parent.Find("Position Corrector").GetComponent<PositionCorrectionBehaviour>();
 
         playerCollider = gameObject.GetComponent<BoxCollider2D>();
 
@@ -147,7 +149,6 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
                 justHitTimer = 0;
             }
         }
-
 
         // Change the character direction when changing input direction
         if (!isFacingRight && horizontalAccelerationDirection > 0f)
@@ -200,6 +201,10 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
                 }
             }
         }
+        else if (collision.gameObject.layer != 7 && collision.gameObject.layer != 8)
+        {
+            positionCorrectionBehaviour.ShadowLerp(false);
+        }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
@@ -220,6 +225,10 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
                 isGrounded = false;
             }
         }
+        else if (collision.gameObject.layer != 7 && collision.gameObject.layer != 8)
+        {
+            positionCorrectionBehaviour.ShadowLerp(true);
+        }
     }
 
     public bool CurrentlyOnTopOfWallOrFloor(GameObject WallOrFloor)
@@ -236,8 +245,6 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
 
     public void Move(Vector2 contextValue)
     {
-        inputTransmitter.Move(contextValue);
-
         if (currentlyAbleToInput)
         {
             // When moving, update the input directions
@@ -249,6 +256,8 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
             retainedInputDirection = contextValue;
             retainedHorizontalAccelerationDirection = retainedInputDirection.x;
         }
+
+        inputTransmitter.Move(contextValue);
     }
 
     public void Jump(InputAction.CallbackContext context)
@@ -258,8 +267,6 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
 
     public void Jump(bool contextPerfomed, bool contextCanceled)
     {
-        inputTransmitter.Jump(contextPerfomed, contextCanceled);
-
         if (currentlyAbleToInput)
         {
             // If on the ground then accelerate upwards
@@ -298,6 +305,8 @@ public class PlayerBehaviour : GenericGravityEntityBehaviour
                 }
             }
         }
+
+        inputTransmitter.Jump(contextPerfomed, contextCanceled);
     }
     
     private bool isJumping()

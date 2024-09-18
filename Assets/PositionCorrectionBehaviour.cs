@@ -7,11 +7,13 @@ public class PositionCorrectionBehaviour : MonoBehaviour
 {
     Vector2 previousTargetPosition;
     Vector2 targetPosition;
-    Vector2 predictedTargetPosition;
     Vector2 playerVelocity;
-    bool predicting;
+    bool doShadowLerp = true;
     Rigidbody2D playerRigidBody2D;
+    Rigidbody2D shadowRigidBody2D;
     PlayerBehaviour playerBehaviour;
+
+    int frameCount = 0;
 
     float gravityScale;
     float HorizontalDrag;
@@ -21,6 +23,7 @@ public class PositionCorrectionBehaviour : MonoBehaviour
     float horizontalAccelerationDirection;
 
     private Transform playerCharacterTransform;
+    private Transform shadowCharacterTransform;
     private PlayerController playerController;
     private PhotonView ParentPV;
     private PhotonView PV;
@@ -35,11 +38,13 @@ public class PositionCorrectionBehaviour : MonoBehaviour
     void Start()
     {
         playerCharacterTransform = transform.parent.Find("Player Character");
+        shadowCharacterTransform = transform.Find("Shadow Character");
         playerController = transform.parent.GetComponent<PlayerController>();
 
         playerBehaviour = playerCharacterTransform.GetComponent<PlayerBehaviour>();
 
         playerRigidBody2D = playerCharacterTransform.GetComponent<Rigidbody2D>();
+        shadowRigidBody2D = shadowCharacterTransform.GetComponent<Rigidbody2D>();
         gravityScale = playerRigidBody2D.gravityScale;
         HorizontalDrag = playerBehaviour.HorizontalDrag;
         HorizontalAccelerationPower = playerBehaviour.HorizontalAccelerationPower;
@@ -51,77 +56,61 @@ public class PositionCorrectionBehaviour : MonoBehaviour
     { 
         if (!ParentPV.IsMine)
         {
-            ParentPV.RPC("GetTruePositionAndVelocity", PV.Owner, PhotonNetwork.LocalPlayer);
-
-            if (previousTargetPosition == targetPosition && playerVelocity.sqrMagnitude > 0)
+            if (frameCount == 0)
             {
-                if (!predicting)
-                {
-                    predicting = true;
-                    predictedTargetPosition = targetPosition;
-                }
-
-                horizontalAccelerationDirection = playerBehaviour.horizontalAccelerationDirection;
-                float newHorizontalVelocity = playerBehaviour.calculateGravitylessAxisVelocity(playerVelocity.x, HorizontalDrag, HorizontalAccelerationPower, horizontalAccelerationDirection, MaximumHorizontalSpeedFromPower);
-
-                float newVerticalVelocity = playerVelocity.y;
-
-                // If faster than the maximum speed then set to the maximum speed.
-                // It is assumed that gravity acts downwards.
-                if (Mathf.Abs(newVerticalVelocity) >= Mathf.Abs(TerminalSpeed) && Mathf.Sign(-1 * newVerticalVelocity) > 0)
-                {
-                    newVerticalVelocity = -1 * TerminalSpeed;
-                }
-                else
-                {
-                    newVerticalVelocity = playerVelocity.y + gravityScale * 1f / 50f;
-                }
-
-                playerVelocity = new Vector2(newHorizontalVelocity, newVerticalVelocity);
-
-                predictedTargetPosition += 1f / 50f * playerVelocity;
+                //ParentPV.RPC("GetTruePositionAndVelocity", PV.Owner, PhotonNetwork.LocalPlayer);
             }
-            else
+            frameCount = (frameCount + 1) % 50;
+
+            Vector2 shadowVelocity = shadowRigidBody2D.velocity;
+
+            horizontalAccelerationDirection = playerBehaviour.horizontalAccelerationDirection;
+            float newHorizontalVelocity = playerBehaviour.calculateGravitylessAxisVelocity(shadowVelocity.x, HorizontalDrag, HorizontalAccelerationPower, horizontalAccelerationDirection, MaximumHorizontalSpeedFromPower);
+
+            float newVerticalVelocity = shadowVelocity.y;
+
+            // If faster than the maximum speed then set to the maximum speed.
+            // It is assumed that gravity acts downwards.
+            if (Mathf.Abs(newVerticalVelocity) >= Mathf.Abs(TerminalSpeed) && Mathf.Sign(-1 * newVerticalVelocity) > 0)
             {
-                predicting = false;
-                predictedTargetPosition = targetPosition;
+                newVerticalVelocity = -1 * TerminalSpeed;
             }
 
+            shadowVelocity = new Vector2(newHorizontalVelocity, newVerticalVelocity);
 
+            shadowRigidBody2D.velocity = shadowVelocity;
 
-            //Debug.Log(playerCharacterTransform.position);
-            //Debug.Log(targetPosition);
-            //Debug.Log("");
+            targetPosition = shadowCharacterTransform.position;
 
-            // Neither update is definitively "later" than the other
-            // It is less rubberbanding, more spring oscillationing
-            // I could request the information simultaneously, hence guaranteeing they are synced?
-            // The problem is that move inputs are less frequent than updates
-            // The only reason move inputs are smooth is because of this, as tethering locations together 50 times per second shows the imperfections
-            // I need to sync predicted and accurate inputs
-            // Maybe put a time stamp in the sends?
-
-            // If there is no lerping, then predicted movement is smooth
-            // If I instead took the start location of the move input and projected where that would be and lerped to that position instead, it should be more accurate
-
-            if ((predictedTargetPosition - new Vector2(playerCharacterTransform.position.x, playerCharacterTransform.position.y)).magnitude > 1)
+            if ((targetPosition - new Vector2(playerCharacterTransform.position.x, playerCharacterTransform.position.y)).magnitude > 1)
             {
-                playerCharacterTransform.position = predictedTargetPosition;
+                playerCharacterTransform.position = targetPosition;
             }
-            else
+            else //if (doShadowLerp)
             {
-                playerCharacterTransform.position = Vector2.Lerp(playerCharacterTransform.position, predictedTargetPosition, 0.15f);
+                playerCharacterTransform.position = Vector2.Lerp(playerCharacterTransform.position, targetPosition, 0.3f);
             }
+            //else
+            //{
+                //ParentPV.RPC("GetTruePositionAndVelocity", PV.Owner, PhotonNetwork.LocalPlayer);
+                //playerCharacterTransform.position = targetPosition;
+
+                // Teleport both objects in contact to their "correct" locations ig?
+            //}
         }
     }
 
+    public void ShadowLerp(bool state)
+    {
+        doShadowLerp = state;
+    }
     
     [PunRPC]
     public void UpdateTruePositionAndVelocity(Vector3 correctPosition, Vector2 correctVelocity)
     {
-        Debug.Log(correctPosition);
         previousTargetPosition = targetPosition;
         targetPosition = correctPosition;
-        playerVelocity = correctVelocity;
+        shadowCharacterTransform.position = targetPosition;
+        shadowRigidBody2D.velocity = correctVelocity;
     }
 }

@@ -28,15 +28,16 @@ public class InputListener : MonoBehaviour
         if (!PV.IsMine)
         {
             playerBehaviour.Move(contextValue);
-            //positionCorrectionBehaviour.UpdateTruePositionAndVelocity(correctPosition, correctVelocity);
+            positionCorrectionBehaviour.UpdateTruePositionAndVelocity(correctPosition, correctVelocity);
         }
     }
 
-    public void Jump(bool contextPerformed, bool contextCanceled)
+    public void Jump(bool contextPerformed, bool contextCanceled, Vector3 correctPosition, Vector2 correctVelocity)
     {
         if (!PV.IsMine)
         {
             playerBehaviour.Jump(contextPerformed, contextCanceled);
+            positionCorrectionBehaviour.UpdateTruePositionAndVelocity(correctPosition, correctVelocity);
         }
     }
 

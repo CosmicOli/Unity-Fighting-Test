@@ -35,10 +35,14 @@ public class PlayerController : MonoBehaviour
             Destroy(playerCharacterObject.GetComponent<PlayerInput>());
             Destroy(playerCharacterObject.transform.Find("Sword").GetComponent<PlayerInput>());
         }
+        else
+        {
+            Destroy(transform.Find("Position Corrector").Find("Shadow Character").gameObject);
+        }
 
         inputListener = transform.Find("Input Listener").GetComponent<InputListener>();
 
-        playerCharacterObject.transform.position = new Vector2(PV.Owner.ActorNumber, 7);
+        this.transform.position += new Vector3(PV.Owner.ActorNumber, 0, 0);
         playerCharacterObject.SetActive(true);
     }
 
@@ -50,20 +54,20 @@ public class PlayerController : MonoBehaviour
     }
 
     [PunRPC]
-    public void Move(Vector2 contextValue)
+    public void Move(Vector2 contextValue, Vector3 correctPosition, Vector2 correctVelocity)
     {
         if (inputListener != null)
         {
-            inputListener.Move(contextValue, playerCharacterObject.transform.position, playerCharacterRigidBody2D.velocity);
+            inputListener.Move(contextValue, correctPosition, correctVelocity);
         }
     }
 
     [PunRPC]
-    public void Jump(bool contextPerformed, bool contextCanceled)
+    public void Jump(bool contextPerformed, bool contextCanceled, Vector3 correctPosition, Vector2 correctVelocity)
     {
         if (inputListener != null)
         {
-            inputListener.Jump(contextPerformed, contextCanceled);
+            inputListener.Jump(contextPerformed, contextCanceled, correctPosition, correctVelocity);
         }
     }
 

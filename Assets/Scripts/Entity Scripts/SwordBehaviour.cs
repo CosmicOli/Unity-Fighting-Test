@@ -62,8 +62,6 @@ public class SwordBehaviour : MonoBehaviour
 
     public void Attack(bool contextPerformed)
     {
-        inputTransmitter.Attack(contextPerformed);
-
         if (playerBehaviour.currentlyAbleToInput)
         {
             // If currently swinging and there is no instantiated Swing object, create one
@@ -87,5 +85,7 @@ public class SwordBehaviour : MonoBehaviour
                 swordSwingBehaviour.AssignConstants(Damage, EnemyKnockbackStrength * CurrentDirection3D, new Vector3(-1 * PlayerKnockbackStrength.x * CurrentDirection3D.x, -1 * PlayerKnockbackStrength.y * CurrentDirection3D.y, 0), SwingTime, playerBehaviour);
             }
         }
+
+        inputTransmitter.Attack(contextPerformed);
     }
 }

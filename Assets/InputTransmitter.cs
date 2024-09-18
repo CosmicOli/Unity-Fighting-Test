@@ -9,17 +9,27 @@ public class InputTransmitter : MonoBehaviour
     private PlayerController playerController;
     private PhotonView PV;
 
+    private GameObject playerCharacterObject;
+    private Rigidbody2D playerCharacterRigidBody2D;
+
     private void Awake()
     {
         playerController = transform.parent.GetComponent<PlayerController>();
         PV = playerController.GetComponent<PhotonView>();
     }
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        playerCharacterObject = transform.parent.Find("Player Character").gameObject;
+        playerCharacterRigidBody2D = playerCharacterObject.GetComponent<Rigidbody2D>();
+    }
+
     public void Move(Vector2 contextValue)
     {
         if (PV.IsMine)
         {
-            PV.RPC("Move", RpcTarget.Others, contextValue);
+            PV.RPC("Move", RpcTarget.Others, contextValue, playerCharacterObject.transform.position, playerCharacterRigidBody2D.velocity);
         }
     }
 
@@ -27,7 +37,7 @@ public class InputTransmitter : MonoBehaviour
     {
         if (PV.IsMine)
         {
-            PV.RPC("Jump", RpcTarget.Others, contextPerformed, contextCanceled);
+            PV.RPC("Jump", RpcTarget.Others, contextPerformed, contextCanceled, playerCharacterObject.transform.position, playerCharacterRigidBody2D.velocity);
         }
     }
 
